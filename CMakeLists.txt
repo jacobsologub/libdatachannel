@@ -86,6 +86,7 @@ set(LIBDATACHANNEL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/rtppacketizationconfig.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/rtcpsrreporter.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/rtppacketizer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/rtptwcchandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/rtpdepacketizer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/h264rtppacketizer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/h264rtpdepacketizer.cpp
@@ -127,6 +128,8 @@ set(LIBDATACHANNEL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rtppacketizationconfig.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rtcpsrreporter.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rtppacketizer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rtptwcchandler.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/twccstats.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rtpdepacketizer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/h264rtppacketizer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/h264rtpdepacketizer.hpp
@@ -174,6 +177,8 @@ set(LIBDATACHANNEL_IMPL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/websocketserver.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wstransport.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wshandshake.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/twccpackettracker.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/twccfeedbackparser.cpp
 )
 
 set(LIBDATACHANNEL_IMPL_HEADERS
@@ -209,6 +214,8 @@ set(LIBDATACHANNEL_IMPL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/websocketserver.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wstransport.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wshandshake.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/twccpackettracker.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/twccfeedbackparser.hpp
 )
 
 set(TESTS_SOURCES

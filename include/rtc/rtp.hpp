@@ -360,6 +360,34 @@ struct RTC_CPP_EXPORT RtpRtx {
 	size_t copyTo(RtpHeader *dest, size_t totalSize, uint8_t originalPayloadType);
 };
 
+// Transport-wide Congestion Control RTP extension
+// RFC draft-holmer-rmcat-transport-wide-cc-extensions
+struct RTC_CPP_EXPORT RtpTwccExt {
+	uint16_t twccSeqNum;
+	
+	void setTwccSeqNum(uint16_t seqNum);
+	[[nodiscard]] uint16_t getTwccSeqNum() const;
+};
+
+// RTCP Transport-wide Congestion Control feedback
+// Format ID 15 for TWCC as per RFC
+struct RTC_CPP_EXPORT RtcpTwcc {
+	RtcpFbHeader header;
+	uint16_t _baseSeqNum;
+	uint16_t _packetStatusCount;
+	uint8_t _referenceTime[3];
+	uint8_t _fbPacketCount;
+	
+	[[nodiscard]] uint16_t getBaseSeqNum() const;
+	[[nodiscard]] uint16_t getPacketStatusCount() const;
+	[[nodiscard]] uint32_t getReferenceTime() const;
+	[[nodiscard]] uint8_t getFbPacketCount() const;
+	[[nodiscard]] const char* getBody() const;
+	[[nodiscard]] char* getBody();
+	
+	void preparePacket(uint16_t baseSeqNum, uint16_t packetStatusCount, uint32_t referenceTime, uint8_t fbPacketCount);
+};
+
 #pragma pack(pop)
 
 } // namespace rtc

@@ -693,4 +693,54 @@ size_t RtpRtx::copyTo(RtpHeader *dest, size_t totalSize, uint8_t originalPayload
 	return totalSize;
 }
 
+// RTP TWCC Extension implementation
+void RtpTwccExt::setTwccSeqNum(uint16_t seqNum) {
+	twccSeqNum = htons(seqNum);
+}
+
+uint16_t RtpTwccExt::getTwccSeqNum() const {
+	return ntohs(twccSeqNum);
+}
+
+// RTCP TWCC implementation
+uint16_t RtcpTwcc::getBaseSeqNum() const {
+	return ntohs(_baseSeqNum);
+}
+
+uint16_t RtcpTwcc::getPacketStatusCount() const {
+	return ntohs(_packetStatusCount);
+}
+
+uint32_t RtcpTwcc::getReferenceTime() const {
+	// Reference time is 24 bits, stored in 3 bytes
+	return (static_cast<uint32_t>(_referenceTime[0]) << 16) |
+	       (static_cast<uint32_t>(_referenceTime[1]) << 8) |
+	       static_cast<uint32_t>(_referenceTime[2]);
+}
+
+uint8_t RtcpTwcc::getFbPacketCount() const {
+	return _fbPacketCount;
+}
+
+const char* RtcpTwcc::getBody() const {
+	return reinterpret_cast<const char*>(&_fbPacketCount + 1);
+}
+
+char* RtcpTwcc::getBody() {
+	return reinterpret_cast<char*>(&_fbPacketCount + 1);
+}
+
+void RtcpTwcc::preparePacket(uint16_t baseSeqNum, uint16_t packetStatusCount, 
+                             uint32_t referenceTime, uint8_t fbPacketCount) {
+	// TWCC uses format ID 15 in the RC field
+	header.header.prepareHeader(205, 15, 0); // PT=205 (RTPFB), FMT=15 (TWCC)
+	_baseSeqNum = htons(baseSeqNum);
+	_packetStatusCount = htons(packetStatusCount);
+	// Store 24-bit reference time
+	_referenceTime[0] = (referenceTime >> 16) & 0xFF;
+	_referenceTime[1] = (referenceTime >> 8) & 0xFF;
+	_referenceTime[2] = referenceTime & 0xFF;
+	_fbPacketCount = fbPacketCount;
+}
+
 }; // namespace rtc
