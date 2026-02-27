@@ -32,6 +32,12 @@ void PacingHandler::run(const message_callback &send) {
 
 	// Update the budget and cap it
 	auto now = std::chrono::high_resolution_clock::now();
+
+	if (mFirstRun) {
+		mLastRun = now;
+		mFirstRun = false;
+	}
+
 	auto newBudget = std::chrono::duration<double>(now - mLastRun).count() * mBytesPerSecond;
 	auto maxBudget = std::chrono::duration<double>(mSendInterval).count() * mBytesPerSecond;
 	mBudget = std::min(mBudget + newBudget, maxBudget);
@@ -59,7 +65,22 @@ void PacingHandler::outgoing(message_vector &messages, const message_callback &s
 	}
 	messages.clear();
 
+	// Drop oldest packets if the queue is too large
+	while (mRtpBuffer.size() > kMaxQueuePackets) {
+		mRtpBuffer.pop();
+	}
+
 	schedule(send);
+}
+
+void PacingHandler::setPacingRate(double bitsPerSecond) {
+	std::lock_guard<std::mutex> lock(mMutex);
+	mBytesPerSecond = bitsPerSecond / 8;
+}
+
+size_t PacingHandler::queueSize() const {
+	std::lock_guard<std::mutex> lock(mMutex);
+	return mRtpBuffer.size();
 }
 
 } // namespace rtc

@@ -27,6 +27,12 @@ public:
 
 	void outgoing(message_vector &messages, const message_callback &send) override;
 
+	// Update the pacing rate dynamically (e.g. in response to congestion control)
+	void setPacingRate(double bitsPerSecond);
+
+	// Current queue depth in packets
+	size_t queueSize() const;
+
 private:
 	std::atomic<bool> mHaveScheduled = false;
 
@@ -35,9 +41,12 @@ private:
 
 	std::chrono::milliseconds mSendInterval;
 	std::chrono::time_point<std::chrono::high_resolution_clock> mLastRun;
+	bool mFirstRun = true;
 
-	std::mutex mMutex;
+	mutable std::mutex mMutex;
 	std::queue<message_ptr> mRtpBuffer;
+
+	static constexpr size_t kMaxQueuePackets = 500;
 
 	void schedule(const message_callback &send);
 	void run(const message_callback &send);
