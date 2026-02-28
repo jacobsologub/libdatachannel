@@ -71,6 +71,9 @@ public:
     // Process outgoing RTP packets - adds TWCC sequence numbers
     void outgoing(message_vector &messages, const message_callback &send) override;
     
+    // Allocate the next transport-wide sequence number (shared by video + padding)
+    uint16_t allocateTransportSeqNum() { return mTwccSeqNum.fetch_add(1, std::memory_order_relaxed); }
+
 private:
     const uint8_t mTwccExtId;
     std::atomic<uint16_t> mTwccSeqNum{0};

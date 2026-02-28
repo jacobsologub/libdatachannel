@@ -38,10 +38,13 @@ void PacingHandler::run(const message_callback &send) {
 		mFirstRun = false;
 	}
 
-	auto newBudget = std::chrono::duration<double>(now - mLastRun).count() * mBytesPerSecond;
-	auto maxBudget = std::chrono::duration<double>(mSendInterval).count() * mBytesPerSecond;
+	auto elapsed = std::chrono::duration<double>(now - mLastRun).count();
+	auto interval = std::chrono::duration<double>(mSendInterval).count();
+	mLastRun = now;
+
+	auto newBudget = elapsed * mBytesPerSecond;
+	auto maxBudget = interval * mBytesPerSecond;
 	mBudget = std::min(mBudget + newBudget, maxBudget);
-	mLastRun = std::chrono::high_resolution_clock::now();
 
 	// Send packets while there is budget, allow a single partial packet over budget
 	while (!mRtpBuffer.empty() && mBudget > 0) {
