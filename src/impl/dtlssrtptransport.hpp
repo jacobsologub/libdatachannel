@@ -37,6 +37,7 @@ public:
 	~DtlsSrtpTransport();
 
 	bool sendMedia(message_ptr message);
+	bool registerOutboundSSRC(uint32_t ssrc);
 
 private:
 	void recvMedia(message_ptr message);
@@ -55,6 +56,7 @@ private:
 
 	message_callback mSrtpRecvCallback;
 	srtp_t mSrtpIn, mSrtpOut;
+	srtp_profile_t mSrtpProfile = srtp_profile_aes128_cm_sha1_80;
 	std::atomic<bool> mInitDone = false;
 	std::vector<unsigned char> mClientSessionKey;
 	std::vector<unsigned char> mServerSessionKey;

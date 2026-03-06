@@ -57,6 +57,7 @@ public:
 
 #if RTC_ENABLE_MEDIA
 	void open(shared_ptr<DtlsSrtpTransport> transport);
+	bool registerOutboundSSRC(uint32_t ssrc);
 #endif
 
 	bool transportSend(message_ptr message);

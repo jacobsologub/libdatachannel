@@ -68,11 +68,13 @@ public:
     // Get information about a sent packet by sequence number
     std::optional<SentPacketInfo> getSentPacketInfo(uint16_t seqNum) const;
 
+    // Allocate a transport-wide sequence number for externally-built packets
+    // (e.g. padding/probing).  The caller is responsible for writing the
+    // sequence number into the RTP extension header.
+    uint16_t allocateTransportSeqNum() { return mTwccSeqNum.fetch_add(1, std::memory_order_relaxed); }
+
     // Process outgoing RTP packets - adds TWCC sequence numbers
     void outgoing(message_vector &messages, const message_callback &send) override;
-    
-    // Allocate the next transport-wide sequence number (shared by video + padding)
-    uint16_t allocateTransportSeqNum() { return mTwccSeqNum.fetch_add(1, std::memory_order_relaxed); }
 
 private:
     const uint8_t mTwccExtId;

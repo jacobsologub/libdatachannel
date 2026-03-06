@@ -333,6 +333,8 @@ void DtlsSrtpTransport::postHandshake() {
 	std::memcpy(mServerSessionKey.data(), serverKey, keySize);
 	std::memcpy(mServerSessionKey.data() + keySize, serverSalt, saltSize);
 
+	mSrtpProfile = srtpProfile;
+
 	srtp_policy_t inbound = {};
 	if (srtp_crypto_policy_set_from_profile_for_rtp(&inbound.rtp, srtpProfile))
 		throw std::runtime_error("SRTP profile is not supported");
@@ -382,6 +384,36 @@ DtlsSrtpTransport::ProfileParams DtlsSrtpTransport::getProfileParamsFromName(str
 	throw std::logic_error("Unknown SRTP profile name: " + std::string(name));
 }
 #endif
+
+bool DtlsSrtpTransport::registerOutboundSSRC(uint32_t ssrc) {
+	std::lock_guard lock(sendMutex);
+	if (!mInitDone) {
+		PLOG_WARNING << "Cannot register SSRC before DTLS handshake";
+		return false;
+	}
+
+	srtp_policy_t policy = {};
+	if (srtp_crypto_policy_set_from_profile_for_rtp(&policy.rtp, mSrtpProfile))
+		return false;
+	if (srtp_crypto_policy_set_from_profile_for_rtcp(&policy.rtcp, mSrtpProfile))
+		return false;
+
+	policy.ssrc.type = ssrc_specific;
+	policy.ssrc.value = htonl(ssrc);
+	policy.key = mIsClient ? mClientSessionKey.data() : mServerSessionKey.data();
+	policy.window_size = 1024;
+	policy.allow_repeat_tx = true;
+	policy.next = nullptr;
+
+	if (srtp_err_status_t err = srtp_add_stream(mSrtpOut, &policy)) {
+		PLOG_WARNING << "Failed to register outbound SSRC 0x" << std::hex << ssrc
+		             << ", status=" << std::dec << static_cast<int>(err);
+		return false;
+	}
+
+	PLOG_DEBUG << "Registered outbound SSRC 0x" << std::hex << ssrc;
+	return true;
+}
 
 } // namespace rtc::impl
 

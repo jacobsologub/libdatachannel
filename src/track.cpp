@@ -83,4 +83,12 @@ bool Track::requestBitrate(unsigned int bitrate) {
 
 shared_ptr<MediaHandler> Track::getMediaHandler() { return impl()->getMediaHandler(); }
 
+bool Track::registerOutboundSSRC(uint32_t ssrc) {
+#if RTC_ENABLE_MEDIA
+	return impl()->registerOutboundSSRC(ssrc);
+#else
+	return false;
+#endif
+}
+
 } // namespace rtc

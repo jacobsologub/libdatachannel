@@ -52,6 +52,11 @@ public:
 	void chainMediaHandler(shared_ptr<MediaHandler> handler);
 	shared_ptr<MediaHandler> getMediaHandler();
 
+	// Register an additional outbound SSRC with the SRTP session so it
+	// gets its own replay window.  Required for padding/probing packets
+	// that use a dedicated SSRC separate from the media SSRC.
+	bool registerOutboundSSRC(uint32_t ssrc);
+
 	// Deprecated, use setMediaHandler() and getMediaHandler()
 	inline void setRtcpHandler(shared_ptr<MediaHandler> handler) { setMediaHandler(handler); }
 	inline shared_ptr<MediaHandler> getRtcpHandler() { return getMediaHandler(); }

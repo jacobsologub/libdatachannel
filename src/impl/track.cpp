@@ -128,6 +128,14 @@ void Track::open(shared_ptr<DtlsSrtpTransport> transport) {
 	if (!mIsClosed)
 		triggerOpen();
 }
+
+bool Track::registerOutboundSSRC(uint32_t ssrc) {
+	std::shared_lock lock(mMutex);
+	auto transport = mDtlsSrtpTransport.lock();
+	if (!transport)
+		return false;
+	return transport->registerOutboundSSRC(ssrc);
+}
 #endif
 
 void Track::incoming(message_ptr message) {
