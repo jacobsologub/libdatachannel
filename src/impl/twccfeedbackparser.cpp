@@ -30,8 +30,10 @@ std::optional<TwccFeedbackParser::ParsedFeedback> TwccFeedbackParser::parse(cons
     feedback.referenceTime = twcc->getReferenceTime();
     feedback.feedbackPacketCount = twcc->getFbPacketCount();
     
-    // Reference time is in 64ms units, convert to microseconds
-    feedback.baseTime = std::chrono::microseconds(feedback.referenceTime * 64000);
+    // Reference time is in 64ms units, convert to microseconds.
+    // Cast to int64_t before multiplying to avoid uint32_t overflow
+    // (24-bit max 16,777,215 * 64,000 = ~1.07e12, exceeds uint32_t).
+    feedback.baseTime = std::chrono::microseconds(static_cast<int64_t>(feedback.referenceTime) * 64000);
     
     uint16_t packetCount = twcc->getPacketStatusCount();
     if (packetCount == 0) {
@@ -125,6 +127,12 @@ bool TwccFeedbackParser::parseStatusChunk(const uint8_t* data, size_t& offset, s
         // Per Google WebRTC: Read from MSB to LSB
         for (int i = 0; i < 7; ++i) {
             uint8_t status = (chunk >> (2 * (6 - i))) & 0x03;
+
+            // Treat Reserved (3) as NotReceived to maintain alignment
+            // with parseReceiveDeltas (which only handles 0, 1, 2).
+            if (status == PacketStatus::Reserved)
+                status = PacketStatus::NotReceived;
+
             statuses.push_back(static_cast<PacketStatus::Status>(status));
         }
     }
