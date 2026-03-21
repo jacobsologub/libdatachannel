@@ -86,10 +86,14 @@ std::function<void()> ThreadPool::dequeue() {
 		--mBusyWorkers;
 		scope_guard guard([&]() { ++mBusyWorkers; });
 		mWaitingCondition.notify_all();
-		if (time)
-			mTasksCondition.wait_until(lock, *time);
-		else
-			mTasksCondition.wait(lock);
+		try {
+			if (time)
+				mTasksCondition.wait_until(lock, *time);
+			else
+				mTasksCondition.wait(lock);
+		} catch (const std::system_error &) {
+			break;
+		}
 	}
 	return nullptr;
 }
